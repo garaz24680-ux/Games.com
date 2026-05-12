@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google AI Chatbot</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #f4f4f9; }
+        #chat-container { width: 100%; max-width: 500px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 20px; }
+        #messages { height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; }
+        .msg { margin: 5px 0; padding: 8px 12px; border-radius: 15px; max-width: 80%; }
+        .user { align-self: flex-end; background: #007bff; color: white; }
+        .bot { align-self: flex-start; background: #e9e9eb; color: black; }
+        #input-area { display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="chat-container">
+    <h3>Gemini AI Chat</h3>
+    <div id="messages"></div>
+    <div id="input-area">
+        <input type="text" id="userInput" placeholder="Ask me anything...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<!-- Import the Google Generative AI SDK -->
+<script type="importmap">
+  {
+    "imports": {
+      "@google/generative-ai": "https://esm.run"
+    }
+  }
+</script>
+
+<script type="module">
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    const API_KEY = "YOUR_API_KEY"; // ⚠️ Replace this with your key
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    window.sendMessage = async () => {
+        const input = document.getElementById("userInput");
+        const messages = document.getElementById("messages");
+        const text = input.value.trim();
+
+        if (!text) return;
+
+        // Add user message to UI
+        addMessage(text, 'user');
+        input.value = "";
+
+        try {
+            // Generate content using the SDK
+            const result = await model.generateContent(text);
+            const response = await result.response;
+            addMessage(response.text(), 'bot');
+        } catch (error) {
+            addMessage("Error: Check your API key or connection.", 'bot');
+            console.error(error);
+        }
+    };
+
+    function addMessage(text, sender) {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `msg ${sender}`;
+        msgDiv.textContent = text;
+        document.getElementById("messages").appendChild(msgDiv);
+        document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+    }
+</script>
+
+</body>
+</html>
